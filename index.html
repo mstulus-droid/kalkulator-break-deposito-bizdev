@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Break Deposito Bizdev</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        .gradient-header {
+            background: linear-gradient(135deg, #1e293b 0%, #020617 100%);
+        }
+
+        .btn-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0f172a;
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+        }
+
+        .error-border {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 1px #ef4444 !important;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .custom-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #0f172a;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            padding: 4px 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-xl relative overflow-hidden flex flex-col">
+        
+        <!-- Header -->
+        <header class="gradient-header text-white p-4 sticky top-0 z-50 shadow-md">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <button id="backToCalcBtn" class="hidden hover:bg-white/10 p-2 rounded-full transition">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="flex items-center gap-3">
+                        <div class="relative w-10 h-10 flex items-center justify-center">
+                            <svg viewBox="0 0 100 100" class="w-full h-full">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="white" stroke-width="4" />
+                                <text x="50" y="58" font-family="Arial" font-weight="900" font-size="32" fill="white" text-anchor="middle">BD</text>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <h1 id="pageTitle" class="font-bold text-base leading-tight">Kalkulator Break Deposito</h1>
+                            <span id="pageSubtitle" class="text-[8px] opacity-70 font-light tracking-[0.1em] uppercase">Early Withdrawal Penalty Calculator</span>
+                        </div>
+                    </div>
+                </div>
+                <button id="settingsBtn" class="p-2 hover:bg-white/10 rounded-full transition">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Container Scrollable -->
+        <div class="flex-1 overflow-y-auto">
+            
+            <!-- VIEW 1: KALKULATOR -->
+            <main id="calculatorView" class="p-5 fade-in">
+                <div class="space-y-4 mb-6">
+                    <!-- Nominal -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Nominal Deposito</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-slate-400 text-sm font-bold">Rp</span>
+                            <input type="text" id="nominal" placeholder="50.000.000" oninput="handleCurrencyInput(this)" class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg transition font-semibold bg-slate-50 placeholder-slate-300">
+                        </div>
+                    </div>
+
+                    <!-- Tenor Kontrak Dropdown -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tenor Kontrak Awal</label>
+                        <select id="tenorSelect" onchange="autoFillRates()" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg bg-slate-50 transition cursor-pointer font-semibold text-sm">
+                            <option value="">-- Pilih Tenor --</option>
+                            <option value="1">1 Bulan</option>
+                            <option value="3">3 Bulan</option>
+                            <option value="6">6 Bulan</option>
+                            <option value="12">12 Bulan</option>
+                            <option value="24">24 Bulan</option>
+                            <option value="36">36 Bulan</option>
+                            <option value="60">60 Bulan</option>
+                        </select>
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tanggal Tanam</label>
+                            <input type="date" id="startDate" onchange="autoFillRates()" class="w-full px-3 py-2 border border-slate-200 rounded-lg transition font-semibold bg-slate-50 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tanggal Break</label>
+                            <input type="date" id="breakDate" onchange="autoFillRates()" class="w-full px-3 py-2 border border-slate-200 rounded-lg transition font-semibold bg-slate-50 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Rates (Otomatis Terisi) -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Bunga Kontrak (%)</label>
+                            <input type="number" step="0.01" id="contractRate" placeholder="5.75" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg transition font-semibold bg-slate-50 placeholder-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Sesuai Tenor (%)</label>
+                            <input type="number" step="0.01" id="actualRate" placeholder="5.00" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg transition font-semibold bg-slate-50 placeholder-slate-300">
+                        </div>
+                    </div>
+
+                    <!-- Reinvestment -->
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" id="reinvested" onchange="toggleReinvestOptions()" class="custom-checkbox">
+                            <label for="reinvested" class="text-xs font-bold text-slate-700">Ditanam Kembali</label>
+                        </div>
+                        <div id="reinvestOptions" class="hidden space-y-3 pt-2 border-t border-slate-200">
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="reinvestType" value="all" checked onchange="togglePartialInput()" class="accent-slate-900">
+                                    <span class="text-[11px] font-medium">Seluruhnya</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="reinvestType" value="partial" onchange="togglePartialInput()" class="accent-slate-900">
+                                    <span class="text-[11px] font-medium">Sebagian</span>
+                                </label>
+                            </div>
+                            <div id="partialInputGroup" class="hidden">
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2 text-slate-400 text-xs font-bold">Rp</span>
+                                    <input type="text" id="reinvestNominal" oninput="handleCurrencyInput(this)" placeholder="Nominal ditanam" class="w-full pl-9 pr-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold bg-white placeholder-slate-300">
+                                </div>
+                            </div>
+                            <p class="text-[9px] text-amber-600 font-medium italic">* Tenor reinvest minimal 1 bulan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <button onclick="resetCalculator()" class="py-3 px-4 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition text-sm">RESET</button>
+                    <button onclick="calculateBreak()" class="py-3 px-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm uppercase tracking-wide">HITUNG BREAK</button>
+                </div>
+
+                <!-- Results Card -->
+                <div id="resultCard" class="hidden card p-6 border-t-4 border-slate-900 fade-in">
+                    <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5 text-center">Ringkasan Pencairan</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-50 pb-2">
+                            <span class="text-slate-500 text-xs">Umur Deposito</span>
+                            <span id="resAge" class="font-bold text-slate-800 text-right">-</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-slate-50 pb-2">
+                            <div class="flex flex-col">
+                                <span class="text-slate-500 text-xs">Denda / Penalty</span>
+                                <span id="penaltyDesc" class="text-[9px] text-slate-400 italic leading-none">(0,1%)</span>
+                            </div>
+                            <span id="resPenalty" class="font-bold text-red-500 text-right">-</span>
+                        </div>
+                        <div class="border-b border-slate-50 pb-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-500 text-xs">Kelebihan Bunga Dibayar</span>
+                                <div class="flex flex-col items-end">
+                                    <span id="resInterestReversal" class="font-bold text-red-500 text-right">-</span>
+                                    <button onclick="toggleInterestDetails()" class="text-[10px] text-blue-600 font-bold mt-1">LIHAT RINCIAN</button>
+                                </div>
+                            </div>
+                            <div id="interestDetails" class="hidden mt-3 p-3 bg-slate-50 rounded-lg border border-slate-100 fade-in text-[11px]">
+                                <div class="detail-row"><span class="text-slate-500">Bunga Kontrak</span><span id="detRateOld">-</span></div>
+                                <div class="detail-row"><span class="text-slate-500">Bunga Sesuai Tenor</span><span id="detRateNew">-</span></div>
+                                <div class="detail-row font-bold pt-1"><span class="text-slate-700">Total Selisih</span><span id="detTotalDiff" class="text-red-500">-</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 text-white p-4 rounded-xl mt-4 text-center">
+                            <div class="text-[10px] uppercase opacity-60 tracking-widest mb-1">Total Dana Diterima</div>
+                            <div id="resTotalReceived" class="text-xl font-black">Rp 0</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- VIEW 2: PENGATURAN BUNGA (Hidden by Default) -->
+            <main id="settingsView" class="hidden p-5 fade-in">
+                <div class="mb-6">
+                    <h2 class="text-sm font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-2">
+                        <i class="fas fa-percent text-slate-400"></i> Pengaturan Suku Bunga (%)
+                    </h2>
+                    <p class="text-[10px] text-slate-400 mb-4 italic leading-relaxed">Gunakan titik (.) sebagai pemisah desimal. Data ini akan disimpan otomatis di browser Anda.</p>
+                    
+                    <div class="grid grid-cols-1 gap-3" id="ratesList">
+                        <!-- Generasi input tenor otomatis via JS -->
+                    </div>
+                </div>
+
+                <div class="space-y-3 mt-8">
+                    <button onclick="saveRates()" class="w-full py-3 px-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm">SIMPAN PENGATURAN</button>
+                    <button onclick="resetDefaultRates()" class="w-full py-3 px-4 bg-slate-100 text-slate-500 font-bold rounded-xl hover:bg-slate-200 transition text-sm">KEMBALIKAN KE DEFAULT</button>
+                </div>
+            </main>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="p-4 border-t border-slate-50 text-center opacity-20">
+            <div class="text-sm font-black tracking-tighter text-slate-900">BIZDEV WM</div>
+        </footer>
+    </div>
+
+    <script>
+        // Data Default Suku Bunga (Sesuai PDF Bank WM)
+        const defaultRates = {
+            "1": 4.75,
+            "3": 5.0,
+            "6": 5.5,
+            "12": 5.75,
+            "24": 6.75,
+            "36": 7.25,
+            "60": 8.5
+        };
+
+        let activeRates = {};
+
+        // Inisialisasi: Load dari LocalStorage atau Gunakan Default
+        function initApp() {
+            const saved = localStorage.getItem('bizdev_depo_rates');
+            activeRates = saved ? JSON.parse(saved) : {...defaultRates};
+            renderSettingsInputs();
+        }
+
+        function renderSettingsInputs() {
+            const list = document.getElementById('ratesList');
+            list.innerHTML = '';
+            Object.keys(activeRates).sort((a,b) => a-b).forEach(tenor => {
+                const item = document.createElement('div');
+                item.className = "flex items-center gap-3 justify-between bg-slate-50 p-3 rounded-lg border border-slate-100";
+                item.innerHTML = `
+                    <span class="text-xs font-bold text-slate-600">${tenor} Bulan</span>
+                    <div class="flex items-center gap-2">
+                        <input type="number" step="0.01" value="${activeRates[tenor]}" data-tenor="${tenor}" class="rate-input w-20 px-2 py-1 border border-slate-200 rounded text-right font-bold text-slate-800">
+                        <span class="text-xs font-bold text-slate-400">%</span>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function saveRates() {
+            const inputs = document.querySelectorAll('.rate-input');
+            inputs.forEach(input => {
+                activeRates[input.dataset.tenor] = parseFloat(input.value) || 0;
+            });
+            localStorage.setItem('bizdev_depo_rates', JSON.stringify(activeRates));
+            alert("Suku bunga berhasil disimpan!");
+            toggleSettings();
+        }
+
+        function resetDefaultRates() {
+            if(confirm("Kembalikan semua suku bunga ke pengaturan awal (PDF)?")) {
+                activeRates = {...defaultRates};
+                renderSettingsInputs();
+                localStorage.setItem('bizdev_depo_rates', JSON.stringify(activeRates));
+            }
+        }
+
+        // Navigasi
+        function toggleSettings() {
+            const isSettingsVisible = !document.getElementById('settingsView').classList.contains('hidden');
+            if (isSettingsVisible) {
+                document.getElementById('settingsView').classList.add('hidden');
+                document.getElementById('calculatorView').classList.remove('hidden');
+                document.getElementById('settingsBtn').classList.remove('hidden');
+                document.getElementById('backToCalcBtn').classList.add('hidden');
+                document.getElementById('pageTitle').innerText = 'Kalkulator Break Deposito';
+            } else {
+                document.getElementById('settingsView').classList.remove('hidden');
+                document.getElementById('calculatorView').classList.add('hidden');
+                document.getElementById('settingsBtn').classList.add('hidden');
+                document.getElementById('backToCalcBtn').classList.remove('hidden');
+                document.getElementById('pageTitle').innerText = 'Pengaturan Bunga';
+            }
+        }
+
+        document.getElementById('settingsBtn').onclick = toggleSettings;
+        document.getElementById('backToCalcBtn').onclick = toggleSettings;
+
+        // Logika Pengisian Otomatis
+        function autoFillRates() {
+            const tenor = document.getElementById('tenorSelect').value;
+            const startDateStr = document.getElementById('startDate').value;
+            const breakDateStr = document.getElementById('breakDate').value;
+
+            // 1. Isi Bunga Kontrak
+            if (tenor && activeRates[tenor]) {
+                document.getElementById('contractRate').value = activeRates[tenor];
+                document.getElementById('contractRate').classList.remove('error-border');
+            }
+
+            // 2. Hitung Umur & Isi Bunga Sesuai Tenor
+            if (startDateStr && breakDateStr) {
+                const start = new Date(startDateStr);
+                const end = new Date(breakDateStr);
+                if (end > start) {
+                    let monthsPassed = (end.getFullYear() - start.getFullYear()) * 12;
+                    monthsPassed -= start.getMonth();
+                    monthsPassed += end.getMonth();
+                    if (end.getDate() < start.getDate()) monthsPassed--;
+                    if (monthsPassed < 0) monthsPassed = 0;
+
+                    // Logika penentuan rate (mengambil rate tertinggi yang tidak melebihi tenor berjalan)
+                    let foundRate = 0;
+                    const sortedTenors = Object.keys(activeRates).sort((a,b) => b-a); // Urutan Besar ke Kecil
+                    
+                    if (monthsPassed >= 1) {
+                        for (let t of sortedTenors) {
+                            if (monthsPassed >= parseInt(t)) {
+                                foundRate = activeRates[t];
+                                break;
+                            }
+                        }
+                    } else {
+                        foundRate = 0; // < 1 bulan tidak berhak bunga (Poin 7b)
+                    }
+                    
+                    document.getElementById('actualRate').value = foundRate;
+                    document.getElementById('actualRate').classList.remove('error-border');
+                }
+            }
+        }
+
+        // Fungsi Standar Kalkulator
+        function formatThousands(value) {
+            if (!value) return "";
+            let val = value.replace(/\D/g, "");
+            return val.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function unformatCurrency(value) {
+            return parseFloat(value.toString().replace(/\./g, "")) || 0;
+        }
+
+        function handleCurrencyInput(input) {
+            input.classList.remove('error-border');
+            input.value = formatThousands(input.value);
+        }
+
+        function formatRupiah(number) {
+            return "Rp " + Math.round(number).toLocaleString('id-ID');
+        }
+
+        function toggleReinvestOptions() {
+            const isChecked = document.getElementById('reinvested').checked;
+            document.getElementById('reinvestOptions').classList.toggle('hidden', !isChecked);
+        }
+
+        function togglePartialInput() {
+            const type = document.querySelector('input[name="reinvestType"]:checked').value;
+            document.getElementById('partialInputGroup').classList.toggle('hidden', type !== 'partial');
+        }
+
+        function toggleInterestDetails() {
+            document.getElementById('interestDetails').classList.toggle('hidden');
+        }
+
+        function calculateBreak() {
+            const fields = ['nominal', 'startDate', 'breakDate', 'contractRate', 'actualRate'];
+            let hasError = false;
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el.value) { el.classList.add('error-border'); hasError = true; }
+                else { el.classList.remove('error-border'); }
+            });
+            if (hasError) return;
+
+            const nominal = unformatCurrency(document.getElementById('nominal').value);
+            const contractRate = parseFloat(document.getElementById('contractRate').value);
+            const actualRate = parseFloat(document.getElementById('actualRate').value);
+            const start = new Date(document.getElementById('startDate').value);
+            const end = new Date(document.getElementById('breakDate').value);
+            
+            let monthsPassed = (end.getFullYear() - start.getFullYear()) * 12;
+            monthsPassed -= start.getMonth();
+            monthsPassed += end.getMonth();
+            if (end.getDate() < start.getDate()) monthsPassed--;
+            if (monthsPassed < 0) monthsPassed = 0;
+
+            let penalty = 0;
+            if (document.getElementById('reinvested').checked) {
+                const type = document.querySelector('input[name="reinvestType"]:checked').value;
+                if (type === 'partial') {
+                    const reinvestNominal = unformatCurrency(document.getElementById('reinvestNominal').value);
+                    penalty = Math.max(0, (nominal - reinvestNominal) * 0.001);
+                    document.getElementById('penaltyDesc').innerText = "(0,1% dari sisa)";
+                } else {
+                    penalty = 0;
+                    document.getElementById('penaltyDesc').innerText = "(Reinvest Seluruhnya)";
+                }
+            } else {
+                penalty = nominal * 0.001;
+                document.getElementById('penaltyDesc').innerText = "(0,1% Penalty)";
+            }
+
+            const monthlyRateOld = (contractRate / 100) / 12;
+            const monthlyRateNew = (actualRate / 100) / 12;
+            const bungaLama = nominal * monthlyRateOld;
+            const bungaBaru = nominal * monthlyRateNew;
+            const interestReversal = Math.max(0, (bungaLama - bungaBaru) * monthsPassed);
+
+            document.getElementById('resAge').innerText = monthsPassed + " Bulan";
+            document.getElementById('resPenalty').innerText = formatRupiah(penalty);
+            document.getElementById('resInterestReversal').innerText = formatRupiah(interestReversal);
+            document.getElementById('resTotalReceived').innerText = formatRupiah(nominal - penalty - interestReversal);
+            
+            document.getElementById('detRateOld').innerText = formatRupiah(bungaLama) + " /bln";
+            document.getElementById('detRateNew').innerText = formatRupiah(bungaBaru) + " /bln";
+            document.getElementById('detTotalDiff').innerText = formatRupiah(interestReversal) + " (x" + monthsPassed + " bln)";
+
+            document.getElementById('resultCard').classList.remove('hidden');
+            document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        function resetCalculator() {
+            const ids = ['nominal', 'startDate', 'breakDate', 'contractRate', 'actualRate', 'reinvestNominal', 'tenorSelect'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                el.value = '';
+                el.classList.remove('error-border');
+            });
+            document.getElementById('reinvested').checked = false;
+            toggleReinvestOptions();
+            document.getElementById('resultCard').classList.add('hidden');
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
