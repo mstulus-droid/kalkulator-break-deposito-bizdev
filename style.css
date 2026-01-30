@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+body { 
+    font-family: 'Inter', sans-serif; 
+    background-color: #f1f5f9; 
+}
+
+.fade-in { 
+    animation: fadeIn 0.3s ease-out; 
+}
+
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(5px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+
+/* Premium Navy Gradient Theme */
+.bg-navy-gradient { 
+    background: linear-gradient(135deg, #020617 0%, #1e3a8a 100%); 
+}
+
+/* Efek Cekung (Concave) untuk Input */
+.concave-input {
+    box-shadow: inset 3px 3px 6px rgba(0,0,0,0.08), inset -2px -2px 5px rgba(255,255,255,0.7);
+    border: 1px solid #e2e8f0;
+    background-color: #fcfcfd;
+}
+
+.concave-input:focus {
+    box-shadow: inset 2px 2px 5px rgba(30, 58, 138, 0.15);
+    border-color: #2563eb;
+    background-color: #ffffff;
+}
+
+/* Efek Emboss (Cembung) untuk Tombol */
+.emboss-btn {
+    background: linear-gradient(145deg, #2563eb, #1e3a8a);
+    box-shadow: 5px 5px 12px rgba(0,0,0,0.3), -2px -2px 6px rgba(255,255,255,0.05);
+    transition: all 0.2s ease;
+}
+
+.emboss-btn:active {
+    box-shadow: inset 3px 3px 8px rgba(0,0,0,0.5);
+    transform: translateY(1px);
+}
+
+.no-wrap { 
+    white-space: nowrap; 
+}
+
+.detail-table td { 
+    padding: 10px 4px; 
+    border-bottom: 1px solid #f8fafc; 
+}
+
+/* Icon custom untuk select (karena select bawaan browser kaku) */
+.custom-select-icon {
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%232563eb%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+    background-size: 16px 16px;
+    background-position: right 1.2rem center;
+    background-repeat: no-repeat;
+}
